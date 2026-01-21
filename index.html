@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <title>Tra cứu thẻ sinh viên STU</title>
+  <style>
+    body { font-family: Arial, Helvetica, sans-serif; background:#f4f6f8; padding:20px; }
+    h1 { text-align:center; margin-bottom:4px; }
+
+    /* Đẩy chữ STU xích lên trên */
+    .stu { margin-top:-12px; margin-bottom:4px; text-align:center; }
+
+    /* STU colors: S + U xanh dương, T đỏ */
+    .stu span.s { color:#0a4fa3; }
+    .stu span.t { color:#c40000; }
+    .stu span.u { color:#0a4fa3; }
+
+    .search { text-align:center; margin-bottom:20px; }
+    input { padding:8px; width:220px; }
+    button { padding:8px 16px; cursor:pointer; }
+
+    .card-wrapper { display:flex; gap:30px; justify-content:center; margin-top:30px; }
+    .card { width:320px; background:#fff; border:1px solid #ccc; border-radius:8px; padding:12px; }
+
+    /* ===== MẶT TRƯỚC ===== */
+    .front h3 { text-align:center; color:#0a4fa3; margin:0 0 8px; }
+    .front h4 { text-align:center; color:#0a4fa3; margin:0 0 8px; }
+
+	.photo {
+		width:115px;
+		height:150px;
+		border:2px solid #0a4fa3;   /* xanh dương + dày */
+		border-radius:0px;          /* bo nhẹ cho giống thẻ thật */
+		margin:10px auto;
+		display:flex;
+		align-items:center;
+		justify-content:center;
+	}
+
+    .name { color:#c40000; font-weight:bold; text-align:center; margin:6px 0; }
+
+    .info { font-size:14px; line-height:1.6; color:#0a4fa3; text-align:center; }
+    .info .mssv { font-weight:bold; }
+
+    .school-box {
+      margin-top:10px; background:#0a4fa3; color:#fff;
+      text-align:center; font-size:12px; padding:6px; border-radius:4px;
+    }
+    .school-name {
+        text-align: center;
+        color: #0a4fa3;
+        font-weight: bold;      /* in đậm */
+        font-size: 15px;        /* giữ gọn 1 dòng */
+        white-space: nowrap;    /* ÉP 1 DÒNG */
+    }
+
+
+    /* ===== MẶT SAU ===== */
+    .back h3 {
+      text-align:center; color:#c40000;
+      font-size:22px; font-weight:bold;
+      margin-bottom:2px;
+    }
+
+    .course {
+      text-align:center;
+      color:#c40000;
+      font-weight:bold;
+      margin-top:0;
+      margin-bottom:12px;
+    }
+
+    .rule {
+      font-size:14px;
+      margin-bottom:10px;
+      color:#0a4fa3;
+      font-weight:bold;
+    }
+
+    .qr {
+        width:160px;
+        height:160px;
+        /* border:1px solid #000; */
+        border: none;
+		margin:30px auto 0;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        overflow:hidden; /* QUAN TRỌNG */
+    }
+
+        /* QUAN TRỌNG */
+    .qr {
+      width:160px;
+      height:160px;
+      margin:30px auto 0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+
+    .qr canvas {
+      width:160px !important;
+      height:160px !important;
+    }
+
+    .hidden { display:none; }
+
+    /* ===== RESPONSIVE CHO ĐIỆN THOẠI ===== */
+    @media (max-width: 768px) {
+      .card-wrapper {
+        flex-direction: column;   /* 👈 xếp DỌC */
+        align-items: center;
+      }
+
+      .card {
+        width: 100%;              /* full chiều ngang */
+        max-width: 340px;         /* giữ form thẻ đẹp */
+      }
+    }
+
+  </style>
+</head>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<body>
+  <h1>Tra cứu thẻ sinh viên</h1>
+
+  <div class="search">
+    <input id="mssvInput" placeholder="Nhập MSSV" />
+    <button onclick="lookup()">Tra cứu</button>
+  </div>
+
+  <div id="result" class="card-wrapper hidden">
+    <!-- ===== MẶT TRƯỚC ===== -->
+    <div class="card front">
+      <h1 class="stu">
+        <span class="s">S</span><span class="t">T</span><span class="u">U</span>
+      </h1>
+      <h3 class="school-name">TRƯỜNG ĐẠI HỌC CÔNG NGHỆ SÀI GÒN</h3>
+
+      <div class="photo">
+        <img id="photo" src="" alt="Ảnh sinh viên" style="width:100%; height:100%; object-fit:cover;">
+      </div>
+
+
+      <div class="name" id="name"></div>
+
+      <div class="info">
+        Ngày sinh: <span id="dob"></span><br/>
+        Lớp: <span id="class"></span><br/>
+        <span id="major"></span><br/>
+        <strong>MSSV:</strong> <span id="mssv" class="mssv"></span>
+      </div>
+
+      <div class="school-box">
+        180 Cao Lỗ, Phường 4, Quận 8, TP.Hồ Chí Minh<br>
+		Điện Thoại: 028.38505520 * Fax: 028.38506595
+      </div>
+    </div>
+
+    <!-- ===== MẶT SAU ===== -->
+    <div class="card back">
+      <h3>THẺ SINH VIÊN</h3>
+      <div class="course">Khóa học 2024 - 2028</div>
+
+      <div class="rule">1. Thẻ sinh viên có giá trị trong thời gian đào tạo tại trường. Hết thời hạn ghi trên thẻ, thẻ sinh viên không còn giá trị.</div>
+      <div class="rule">2. Thẻ sinh viên đồng thời là thẻ dự thi trong quá trình học tập tại trường.</div>
+
+      <div class="qr" id="qr"></div>
+
+
+    </div>
+  </div>
+
+<script>
+  function removeVietnameseTones(str) {
+    return str
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/đ/g, "d")
+      .replace(/Đ/g, "D")
+      .replace(/\s+/g, "")
+      .toUpperCase();
+  }
+
+  function lookup() {
+    const mssv = document.getElementById("mssvInput").value.trim().toUpperCase();
+    const result = document.getElementById("result");
+    const qrBox = document.getElementById("qr");
+
+    if (!mssv) {
+      alert("Vui lòng nhập MSSV");
+      return;
+    }
+
+    const basePath = `data/${mssv}`;
+
+    fetch(`${basePath}/data.json`)
+      .then(res => {
+        if (!res.ok) throw new Error();
+        return res.json();
+      })
+      .then(sv => {
+        document.getElementById("name").innerText = sv.name;
+        document.getElementById("dob").innerText = sv.dob;
+        document.getElementById("class").innerText = sv.class;
+        document.getElementById("major").innerText = sv.major;
+        document.getElementById("mssv").innerText = sv.mssv;
+
+        // Ảnh sinh viên = MSSV.png
+        document.getElementById("photo").src = `${basePath}/photo.png`;
+
+        // ===== TẠO NỘI DUNG QR =====
+        const nameNoAccent = removeVietnameseTones(sv.name);
+        const dobQR = sv.dob.replace(/\//g, ".");
+        const qrContent = `${sv.mssv}_${nameNoAccent}_${dobQR}`;
+
+        // Xoá QR cũ
+        qrBox.innerHTML = "";
+
+        // Tạo QR mới
+        new QRCode(qrBox, {
+          text: qrContent,
+          width: 160,
+          height: 160,
+          correctLevel: QRCode.CorrectLevel.H
+        });
+
+        result.classList.remove("hidden");
+      })
+      .catch(() => {
+        alert("Không tìm thấy sinh viên");
+        result.classList.add("hidden");
+      });
+  }
+</script>
+
+</body>
+</html> 
